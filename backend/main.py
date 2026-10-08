@@ -72,14 +72,14 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://reportdecoder-ten.vercel.app"],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
 ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp", "application/pdf"}
-MAX_SIZE = 10 * 1024 * 1024  # 10 MB
+MAX_SIZE = 4 * 1024 * 1024  # 4 MB
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.2-90b-vision-preview")
@@ -128,7 +128,7 @@ async def analyze(
     if len(file_bytes) > MAX_SIZE:
         raise HTTPException(
             status_code=413,
-            detail=f"File too large ({len(file_bytes)} bytes). Max allowed: {MAX_SIZE} bytes (10 MB).",
+            detail=f"File too large ({len(file_bytes)} bytes). Max allowed: {MAX_SIZE} bytes (4 MB).",
         )
 
     # --- build prompt ---
@@ -184,16 +184,24 @@ Return a valid JSON object matching this schema exactly:
             "image_url": {"url": b64_img}
         })
 
-    try:
-        response = get_client().chat.completions.create(
-            model=GROQ_MODEL,
-            messages=[{"role": "user", "content": content_parts}],
-            temperature=0.0,
-            response_format={"type": "json_object"}
-        )
-        response_text = response.choices[0].message.content
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Groq API error: {e}")
+    import time
+    
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            response = get_client().chat.completions.create(
+                model=GROQ_MODEL,
+                messages=[{"role": "user", "content": content_parts}],
+                temperature=0.0,
+                response_format={"type": "json_object"},
+                timeout=30.0,
+            )
+            response_text = response.choices[0].message.content
+            break
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise HTTPException(status_code=502, detail=f"Groq API error after retries: {e}. Please try again later.")
+            time.sleep(1)
 
     try:
         result = json.loads(response_text)

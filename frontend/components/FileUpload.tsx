@@ -42,8 +42,8 @@ export default function FileUpload({
   }, []);
 
   const processFile = useCallback(async (selected: File) => {
-    if (selected.size > 10 * 1024 * 1024) {
-        alert("File too large. Maximum size is 10MB.");
+    if (selected.size > 4 * 1024 * 1024) {
+        alert("File too large. Maximum size is 4MB.");
         return;
     }
     
@@ -174,7 +174,7 @@ export default function FileUpload({
                   Drop your medical report here
                 </p>
                 <p className="text-sm text-[var(--color-muted)] mt-1">
-                  or click to browse • JPG, PNG, WEBP, PDF up to 10 MB
+                  or click to browse • JPG, PNG, WEBP, PDF up to 4 MB
                 </p>
               </div>
             </div>

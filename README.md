@@ -19,13 +19,16 @@ Built by **Team_Altron**, Report Decoder leverages vision-language models to tra
 
 ## 🌐 Live Demo & Deployment
 For evaluators to easily test and get outputs without setting up the project locally, you can access the live deployed version:
-- **Frontend (Live App)**: `[Insert Vercel URL here]`
-- **Backend API**: `[Insert Render URL here]`
+- **Live App**: [https://reportdecoder-ten.vercel.app](https://reportdecoder-ten.vercel.app)
+
+*Note: The frontend is exposed publicly. The backend API is strictly internal to Vercel and bound securely via Vercel Services.*
 
 ### How to Deploy (For Evaluators)
 If you wish to deploy this yourself:
-1. **Backend (Render)**: Connect the GitHub repository, set the root directory to `backend`, and add your `GROQ_API_KEY`. Render will automatically build from the Dockerfile and map the `$PORT`.
-2. **Frontend (Vercel)**: Connect the repository, set the root directory to `frontend`, and set the `NEXT_PUBLIC_API_URL` environment variable to your deployed Render URL.
+1. **Vercel**: Import the GitHub repository into Vercel. Vercel will automatically detect the `vercel.json` file and set up both the frontend and backend as internal services.
+2. In the Vercel project settings under **Environment Variables**, add:
+   - `GROQ_API_KEY`: Your Groq API Key.
+   - `NEXT_PUBLIC_API_URL`: Leave blank or set as needed (handled internally by Vercel Services bindings).
 
 ## ⚙️ Setup & Installation
 
@@ -72,8 +75,8 @@ npm run test
 
 ## 🔒 Security
 - **Data Protection**: Temp files are not saved to disk. Uploads are strictly processed in-memory (`BytesIO`/`File.read()`).
-- **Rate Limiting**: Configured using SlowAPI to prevent abuse (max 5 analysis calls per minute).
-- **CORS**: Restricted to the frontend origin only.
+- **Rate Limiting**: Configured using SlowAPI to prevent abuse (max 5 analysis calls per minute). *Note: In-memory rate limiting is per-instance on serverless (like Vercel), meaning the limit applies individually to each cold-start instance.*
+- **CORS**: Restricted to `https://reportdecoder-ten.vercel.app`.
 
 ## ⚠️ Medical Disclaimer
 This tool is for educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified physician for your medical needs.

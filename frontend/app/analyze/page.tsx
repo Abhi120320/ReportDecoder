@@ -9,7 +9,7 @@ import ResultsCards from "@/components/ResultsCards";
 import { SUPPORTED_LANGUAGES } from "@/lib/types";
 import type { AnalysisResponse, SupportedLanguage } from "@/lib/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = "/api";
 const LS_KEY = "report-decoder-last-result";
 
 export default function AnalyzePage() {

@@ -17,6 +17,16 @@ Built by **Team_Altron**, Report Decoder leverages vision-language models to tra
 - **Backend**: FastAPI (Python), SlowAPI for rate limiting.
 - **AI Model**: Groq API (`qwen/qwen3.8-27b`).
 
+## 🌐 Live Demo & Deployment
+For evaluators to easily test and get outputs without setting up the project locally, you can access the live deployed version:
+- **Frontend (Live App)**: `[Insert Vercel URL here]`
+- **Backend API**: `[Insert Render URL here]`
+
+### How to Deploy (For Evaluators)
+If you wish to deploy this yourself:
+1. **Backend (Render)**: Connect the GitHub repository, set the root directory to `backend`, and add your `GROQ_API_KEY`. Render will automatically build from the Dockerfile and map the `$PORT`.
+2. **Frontend (Vercel)**: Connect the repository, set the root directory to `frontend`, and set the `NEXT_PUBLIC_API_URL` environment variable to your deployed Render URL.
+
 ## ⚙️ Setup & Installation
 
 ### Prerequisites

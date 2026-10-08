@@ -1,6 +1,7 @@
 from io import BytesIO
 
 from fastapi.testclient import TestClient
+
 from main import app
 
 client = TestClient(app)
@@ -72,7 +73,8 @@ def test_analyze_success(monkeypatch):
     class MockCompletions:
         def create(self, **kwargs):
             class MockResponse:
-                choices = [MockChoices()]
+                def __init__(self):
+                    self.choices = [MockChoices()]
             return MockResponse()
 
     class MockChat:

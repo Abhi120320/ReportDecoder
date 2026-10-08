@@ -18,12 +18,12 @@ Built by **Team_Altron**, Report Decoder leverages vision-language models to tra
 - **AI Model**: Groq API (`qwen/qwen3.8-27b`).
 
 ## 🌐 Live Demo & Deployment
-For evaluators to easily test and get outputs without setting up the project locally, you can access the live deployed version:
+To easily test and get outputs without setting up the project locally, you can access the live deployed version:
 - **Live App**: [https://reportdecoder-ten.vercel.app](https://reportdecoder-ten.vercel.app)
 
 *Note: The frontend is exposed publicly. The backend API is strictly internal to Vercel and bound securely via Vercel Services.*
 
-### How to Deploy (For Evaluators)
+### How to Deploy (Optional)
 If you wish to deploy this yourself:
 1. **Vercel**: Import the GitHub repository into Vercel. Vercel will automatically detect the `vercel.json` file and set up both the frontend and backend as internal services.
 2. In the Vercel project settings under **Environment Variables**, add:

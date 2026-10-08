@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import FileUpload from "@/components/FileUpload";
-import LoadingScanner from "@/components/LoadingScanner";
-import ResultsCards from "@/components/ResultsCards";
+
+const LoadingScanner = dynamic(() => import("@/components/LoadingScanner"), { ssr: false });
+const ResultsCards = dynamic(() => import("@/components/ResultsCards"), { ssr: false });
 import { SUPPORTED_LANGUAGES } from "@/lib/types";
 import type { AnalysisResponse, SupportedLanguage } from "@/lib/types";
 
@@ -18,6 +20,7 @@ export default function AnalyzePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResponse | null>(null);
+  const [resultCache, setResultCache] = useState<Record<string, AnalysisResponse>>({});
 
   // Load last result from localStorage
   useEffect(() => {
@@ -25,7 +28,11 @@ export default function AnalyzePage() {
       const saved = localStorage.getItem(LS_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        setTimeout(() => setResult(parsed), 0);
+        setTimeout(() => {
+          setResult(parsed.result);
+          setResultCache(parsed.cache || { [parsed.language]: parsed.result });
+          setLanguage(parsed.language);
+        }, 0);
       }
     } catch {
       // ignore
@@ -36,23 +43,49 @@ export default function AnalyzePage() {
   useEffect(() => {
     if (result) {
       try {
-        localStorage.setItem(LS_KEY, JSON.stringify(result));
+        localStorage.setItem(LS_KEY, JSON.stringify({ result, cache: resultCache, language }));
       } catch {
         // ignore
       }
     }
-  }, [result]);
+  }, [result, resultCache, language]);
 
-  const handleAnalyze = useCallback(async () => {
+
+
+  const clearAll = () => {
+    setFile(null);
+    setResult(null);
+    setResultCache({});
+    setError(null);
+    localStorage.removeItem(LS_KEY);
+  };
+
+  const switchLanguage = async (newLang: SupportedLanguage) => {
+    if (newLang === language) return;
+    setLanguage(newLang);
+    if (resultCache[newLang]) {
+      setResult(resultCache[newLang]);
+      return;
+    }
+    // Else, analyze again with the new language
+    await handleAnalyze(newLang);
+  };
+
+  const handleAnalyze = async (targetLanguage?: SupportedLanguage) => {
+    const lang = targetLanguage || language;
     if (!file) return;
 
     setLoading(true);
     setError(null);
-    setResult(null);
+    
+    // Don't clear result immediately to allow a skeleton/loading overlay, or just clear it if switching
+    if (!resultCache[lang]) {
+        setResult(null);
+    }
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("language", language);
+    formData.append("language", lang);
 
     try {
       const res = await fetch(`${API_URL}/analyze`, {
@@ -68,6 +101,7 @@ export default function AnalyzePage() {
 
       const data: AnalysisResponse = await res.json();
       setResult(data);
+      setResultCache((prev) => ({ ...prev, [lang]: data }));
     } catch (err) {
       setError(
         err instanceof Error
@@ -77,14 +111,7 @@ export default function AnalyzePage() {
     } finally {
       setLoading(false);
     }
-  }, [file, language]);
-
-  const clearAll = useCallback(() => {
-    setFile(null);
-    setResult(null);
-    setError(null);
-    localStorage.removeItem(LS_KEY);
-  }, []);
+  };
 
   return (
     <main className="flex-1 min-h-screen">
@@ -163,7 +190,7 @@ export default function AnalyzePage() {
 
               {/* Analyze button */}
               <motion.button
-                onClick={handleAnalyze}
+                onClick={() => handleAnalyze()}
                 disabled={!file}
                   className={`w-full py-4 rounded-lg font-medium transition-all ${
                   file
@@ -210,6 +237,22 @@ export default function AnalyzePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
             >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-[var(--color-foreground)]">Your Analysis</h2>
+                <div className="flex items-center gap-2">
+                   <label htmlFor="res-lang" className="text-sm text-[var(--color-muted)]">Translate to:</label>
+                   <select
+                     id="res-lang"
+                     value={language}
+                     onChange={(e) => switchLanguage(e.target.value as SupportedLanguage)}
+                     className="bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-sm text-[var(--color-foreground)] focus:outline-none focus:border-[var(--color-foreground)]"
+                   >
+                     {SUPPORTED_LANGUAGES.map((lang) => (
+                       <option key={lang} value={lang}>{lang}</option>
+                     ))}
+                   </select>
+                </div>
+              </div>
               <ResultsCards data={result} />
             </motion.div>
           )}

@@ -64,17 +64,25 @@ npm run dev
 ```
 
 ## 🧪 Testing
-The backend features unit and integration tests (validating file handling, parsing structures, and rate limits).
+The repository contains comprehensive tests for both frontend and backend.
 
-To run the tests:
+**Backend (pytest):**
+```bash
+cd backend
+pytest
+```
+*Tests file validation, response structures, Groq mocking, and rate limits.*
+
+**Frontend (Vitest + React Testing Library):**
 ```bash
 cd frontend
-npm run test
+npm test
 ```
-*(This triggers pytest for the backend API logic with AI calls mocked).*
+*Tests component rendering, language selection, and lab-value status formatting.*
 
 ## 🔒 Security
 - **Data Protection**: Temp files are not saved to disk. Uploads are strictly processed in-memory (`BytesIO`/`File.read()`).
+- **File Limits**: Strict 4MB max upload limit enforced on both frontend and backend to respect serverless payload constraints.
 - **Rate Limiting**: Configured using SlowAPI to prevent abuse (max 5 analysis calls per minute). *Note: In-memory rate limiting is per-instance on serverless (like Vercel), meaning the limit applies individually to each cold-start instance.*
 - **CORS**: Restricted to `https://reportdecoder-ten.vercel.app`.
 

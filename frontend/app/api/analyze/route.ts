@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (err: any) {
-    return NextResponse.json({ detail: err.message }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ detail: (err as Error).message }, { status: 500 });
   }
 }

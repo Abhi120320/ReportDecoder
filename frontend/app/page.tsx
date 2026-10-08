@@ -94,6 +94,7 @@ export default function LandingPage() {
             <a href="#problem" className="hover:text-[var(--color-foreground)] transition-colors">Problem</a>
             <a href="#how-it-works" className="hover:text-[var(--color-foreground)] transition-colors">How it works</a>
             <a href="#features" className="hover:text-[var(--color-foreground)] transition-colors">Features</a>
+            <a href="#privacy" className="hover:text-[var(--color-foreground)] transition-colors">Privacy</a>
           </div>
         </div>
       </nav>
@@ -112,10 +113,10 @@ export default function LandingPage() {
               AI-powered • 8+ Indian languages
             </div>
             <h1 className="font-semibold tracking-tight text-[var(--color-foreground)] mb-6 leading-[1.1]" style={{ fontSize: "clamp(2.5rem, 5vw, 4.25rem)" }}>
-              Patient friendly medical reports that speak your language.
+              Patient-friendly medical reports that speak your language.
             </h1>
             <p className="text-lg text-[var(--color-muted)] mb-10 max-w-xl leading-[1.6]">
-              Upload your medical report, prescription, or lab results. Get a simple, patient friendly explanation in over 8 regional languages instantly.
+              Upload your medical report, prescription, or lab results. Get a simple, patient-friendly explanation in over 8 regional languages instantly.
             </p>
             <div className="flex flex-wrap items-center gap-4 mb-8">
               <Link href="/analyze" className="btn-primary">
@@ -279,7 +280,7 @@ export default function LandingPage() {
       </section>
 
       {/* About & Privacy */}
-      <section className="py-24 px-6 max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 border-t border-[var(--color-border)] overflow-hidden">
+      <section id="privacy" className="py-24 px-6 max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 border-t border-[var(--color-border)] overflow-hidden">
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -288,7 +289,7 @@ export default function LandingPage() {
         >
           <h2 className="text-2xl font-semibold text-[var(--color-foreground)] tracking-tight mb-4">About the project</h2>
           <p className="text-[var(--color-muted)] leading-[1.6] mb-8 text-sm">
-            Report Decoder uses AI to turn complex medical documents into simple, patient friendly explanations in regional languages. We believe everyone has the right to understand their own health data without anxiety or confusion.
+            Report Decoder uses AI to turn complex medical documents into simple, patient-friendly explanations in regional languages. We believe everyone has the right to understand their own health data without anxiety or confusion.
           </p>
         </motion.div>
         <motion.div

@@ -82,7 +82,7 @@ ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp", "application/pdf"}
 MAX_SIZE = 4 * 1024 * 1024  # 4 MB
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.2-11b-vision-instruct")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
 
 _client = None
 

@@ -1,164 +1,69 @@
-# 🩺 Report Decoder
+# Report Decoder
 
-**"Your medical report, decoded in your language."**
+Report Decoder is an AI-powered application designed to solve a critical healthcare problem in India: **patients receive medical reports, prescriptions, and lab results full of jargon they can't understand.** Additionally, language barriers exacerbate this issue since most reports are generated in English.
 
-Upload a medical report or prescription (JPG, PNG, WEBP, or PDF) and get a simple, patient-friendly explanation in your chosen language — powered by Google's Gemini AI.
+Built by **Team_Altron**, Report Decoder leverages vision-language models to translate complex medical documents into simple, patient-friendly explanations in 8+ regional Indian languages.
 
----
+## 🚀 Features
+- **Multilingual Support**: Translates into Hindi, Kannada, Tamil, Telugu, Malayalam, Bengali, Marathi, and English.
+- **Lab-Value Highlighting**: Automatically extracts and classifies lab values (normal, high, low).
+- **Prescription Breakdown**: Simple, structured extraction of medications, dosages, and timings.
+- **Privacy-First**: No reports or data are stored. All processing is done in-memory on the backend and discarded.
+- **Efficiency**: Includes client-side image compression to save bandwidth and improve upload speeds.
+- **Accessibility**: Includes a read-aloud Text-to-Speech function and a fully keyboard-navigable UI.
 
-## 🧩 Problem
+## 🛠 Tech Stack
+- **Frontend**: Next.js (React), Tailwind CSS, Framer Motion.
+- **Backend**: FastAPI (Python), SlowAPI for rate limiting.
+- **AI Model**: Groq API (`qwen/qwen3.8-27b`).
 
-Medical reports and prescriptions are filled with abbreviations, technical terms, and jargon that most patients can't understand. Non-English speakers face an even bigger barrier. Patients leave the doctor's office without truly knowing what their report says.
-
-## 💡 Solution
-
-Report Decoder uses Google's Gemini multimodal AI to read and explain medical documents in **8 Indian languages**, using everyday words anyone can understand. No model training needed — just upload and decode.
-
----
-
-## ✨ Features
-
-| Feature | Description |
-|---|---|
-| 🌐 **8 Languages** | English, Hindi, Kannada, Tamil, Telugu, Malayalam, Marathi, Bengali |
-| 💊 **Medicine Breakdown** | Name, purpose, dosage, timing, and food instructions |
-| 📅 **Daily Schedule** | Morning / Afternoon / Night medicine timeline |
-| 🔬 **Lab Values Decoded** | Color-coded normal/high/low with simple explanations |
-| 🚨 **Red Flag Alerts** | Urgent findings highlighted for doctor discussion |
-| ❓ **Doctor Questions** | 3–5 suggested questions to ask your physician |
-| 🔊 **Read Aloud** | Browser-based text-to-speech for accessibility |
-| 📋 **Copy Summary** | One-click copy for sharing with family |
-| 💾 **Auto-Save** | Last result saved in localStorage |
-| 🎨 **3D Hero** | Floating document with glowing particles (Three.js) |
-| 📱 **Responsive** | Mobile-first, dark, modern design |
-| ♿ **Accessible** | Respects `prefers-reduced-motion` |
-
----
-
-## 🏗 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Frontend** | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, Framer Motion, Three.js (React Three Fiber + Drei) |
-| **Backend** | Python, FastAPI, Uvicorn |
-| **AI** | Google Gemini API (multimodal, `google-genai` SDK) |
-| **Validation** | Pydantic response schemas, structured JSON output |
-
----
-
-## 🏛 Architecture
-
-```
-┌────────────────┐         ┌──────────────┐         ┌──────────────┐
-│                │  POST   │              │  Gemini  │              │
-│   Next.js App  │────────▶│  FastAPI     │────────▶│  Google      │
-│   (Frontend)   │◀────────│  (Backend)   │◀────────│  Gemini API  │
-│   :3000        │  JSON   │  :8000       │  JSON    │              │
-└────────────────┘         └──────────────┘         └──────────────┘
-     Upload                  Validate                 Multimodal
-     Display                 Proxy                    Analysis
-```
-
----
-
-## 🚀 Setup
+## ⚙️ Setup & Installation
 
 ### Prerequisites
+- Node.js (v20+)
+- Python (v3.9+)
+- Docker (optional but recommended)
 
-- Python 3.9+
-- Node.js 18+
-- Docker & Docker Compose (Optional, for containerized setup)
-- A [Google Gemini API key](https://aistudio.google.com/apikey)
-
-### Option 1: Docker (Recommended)
-
-```bash
-# Clone the repository
-git clone https://github.com/Abhi120320/ReportDecoder.git
-cd ReportDecoder
-
-# Configure environment
-cp backend/.env.example backend/.env
-# Edit backend/.env and add your GEMINI_API_KEY
-
-# Build and start the containers
-docker-compose up --build -d
+### 1. Environment Variables
+In the `backend` directory, create a `.env` file based on `.env.example`:
+```
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+### 2. Running with Docker (Recommended)
+```bash
+docker compose up --build
+```
+The frontend will be available at `http://localhost:3000` and the backend at `http://localhost:8000`.
 
-### Option 2: Manual Setup
-
-#### Backend
-
+### 3. Running Locally (Without Docker)
+**Backend:**
 ```bash
 cd backend
-
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
-
-# Run
 uvicorn main:app --reload --port 8000
 ```
-
-### Frontend
-
+**Frontend:**
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Configure environment
-cp .env.example .env.local
-
-# Run
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+## 🧪 Testing
+The backend features unit and integration tests (validating file handling, parsing structures, and rate limits).
 
----
+To run the tests:
+```bash
+cd frontend
+npm run test
+```
+*(This triggers pytest for the backend API logic with AI calls mocked).*
 
-## 🔐 Environment Variables
+## 🔒 Security
+- **Data Protection**: Temp files are not saved to disk. Uploads are strictly processed in-memory (`BytesIO`/`File.read()`).
+- **Rate Limiting**: Configured using SlowAPI to prevent abuse (max 5 analysis calls per minute).
+- **CORS**: Restricted to the frontend origin only.
 
-### Backend (`backend/.env`)
-
-| Variable | Default | Description |
-|---|---|---|
-| `GEMINI_API_KEY` | *(required)* | Your Google Gemini API key |
-| `GEMINI_MODEL` | `gemini-2.0-flash` | Gemini model to use |
-
-### Frontend (`frontend/.env.local`)
-
-| Variable | Default | Description |
-|---|---|---|
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend API URL |
-
----
-
-## 🔮 Future Scope
-
-- **Weekly BP/Sugar Tracker** — Upload readings over time and get trend explanations (e.g., "your blood sugar is trending higher this week")
-- **Voice-Based Health Monitoring** — Describe symptoms by voice with clinical validation and preliminary guidance
-- **Drug Interaction Checks** — Cross-reference prescribed medicines for potential interactions and alerts
-
----
-
-## ⚕️ Disclaimer
-
-> **Report Decoder is an educational aid and does not provide medical diagnosis or advice. Always consult a qualified doctor.**
-
----
-
-## 📄 License
-
-MIT
+## ⚠️ Medical Disclaimer
+This tool is for educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified physician for your medical needs.

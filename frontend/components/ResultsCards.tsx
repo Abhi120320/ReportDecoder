@@ -22,21 +22,16 @@ const item = {
 function SectionHeader({
   icon,
   title,
-  color = "var(--color-primary-light)",
 }: {
   icon: React.ReactNode;
   title: string;
-  color?: string;
 }) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
-        style={{ background: `color-mix(in srgb, ${color} 15%, transparent)` }}
-      >
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg bg-[var(--color-surface-alt)] border border-[var(--color-border)]">
         {icon}
       </div>
-      <h3 className="text-lg font-bold" style={{ color }}>
+      <h3 className="text-lg font-semibold text-[var(--color-foreground)]">
         {title}
       </h3>
     </div>
@@ -55,7 +50,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={copy}
-      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[var(--color-card-border)] text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:border-[var(--color-primary)]/40 transition-all"
+      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-foreground)] hover:bg-[var(--color-surface-alt)] transition-colors"
       id="copy-summary-btn"
     >
       {copied ? (
@@ -97,10 +92,10 @@ function ReadAloudButton({ text }: { text: string }) {
   return (
     <button
       onClick={toggle}
-      className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all ${
+      className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
         speaking
-          ? "border-[var(--color-accent)] text-[var(--color-accent)]"
-          : "border-[var(--color-card-border)] text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:border-[var(--color-accent)]/40"
+          ? "border-[var(--color-foreground)] bg-[var(--color-foreground)] text-[var(--color-background)]"
+          : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-foreground)] hover:bg-[var(--color-surface-alt)]"
       }`}
       id="read-aloud-btn"
     >
@@ -113,18 +108,21 @@ function ReadAloudButton({ text }: { text: string }) {
 }
 
 function StatusBadge({ status }: { status: "normal" | "high" | "low" }) {
-  const colors = {
-    normal: { bg: "rgba(0,184,148,0.15)", text: "var(--color-success)", label: "Normal" },
-    high: { bg: "rgba(255,107,107,0.15)", text: "var(--color-danger)", label: "High" },
-    low: { bg: "rgba(254,202,87,0.15)", text: "var(--color-warning)", label: "Low" },
-  };
-  const c = colors[status];
+  const isNormal = status === "normal";
   return (
     <span
-      className="text-[11px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide"
-      style={{ background: c.bg, color: c.text }}
+      className={`text-xs font-medium px-2.5 py-1 rounded-md border flex items-center gap-1.5 ${
+        isNormal
+          ? "border-[var(--color-border)] text-[var(--color-muted)] bg-[var(--color-surface-alt)]"
+          : "border-[var(--color-foreground)] text-[var(--color-foreground)] bg-[var(--color-surface)]"
+      }`}
     >
-      {c.label}
+      {!isNormal && (
+        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={status === "high" ? "M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" : "M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3"} />
+        </svg>
+      )}
+      {status === "normal" ? "Normal" : status === "high" ? "High" : "Low"}
     </span>
   );
 }
@@ -153,13 +151,13 @@ function MedicineTimeline({ medicines }: { medicines: Medicine[] }) {
   });
 
   return (
-    <motion.div variants={item} className="glass-card p-6">
-      <SectionHeader icon="📅" title="Daily Medicine Schedule" color="var(--color-accent)" />
+    <motion.div variants={item} className="card p-6">
+      <SectionHeader icon="📅" title="Daily Medicine Schedule" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {periods.map((period) => (
           <div
             key={period}
-            className="rounded-xl p-4 border border-[var(--color-card-border)] bg-[rgba(10,10,20,0.4)]"
+            className="rounded-xl p-4 border border-[var(--color-border)] bg-[var(--color-surface-alt)]"
           >
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xl">{icons[period]}</span>
@@ -172,9 +170,9 @@ function MedicineTimeline({ medicines }: { medicines: Medicine[] }) {
                 {grouped[period].map((m, i) => (
                   <div
                     key={i}
-                    className="text-xs p-2 rounded-lg bg-[rgba(108,92,231,0.08)] border border-[rgba(108,92,231,0.1)]"
+                    className="text-xs p-3 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)]"
                   >
-                    <p className="font-semibold text-[var(--color-primary-light)]">{m.name}</p>
+                    <p className="font-semibold text-[var(--color-foreground)]">{m.name}</p>
                     <p className="text-[var(--color-muted)]">
                       {m.dosage} • {m.with_food} food
                     </p>
@@ -214,7 +212,7 @@ export default function ResultsCards({ data }: { data: AnalysisResponse }) {
       className="space-y-5"
     >
       {/* Summary */}
-      <motion.div variants={item} className="glass-card glow-primary p-6">
+      <motion.div variants={item} className="card p-6">
         <div className="flex items-start justify-between gap-3 mb-3">
           <SectionHeader icon="📋" title="Summary" />
           <div className="flex gap-2 mt-1 shrink-0">
@@ -222,11 +220,11 @@ export default function ResultsCards({ data }: { data: AnalysisResponse }) {
             <ReadAloudButton text={fullText} />
           </div>
         </div>
-        <p className="text-[var(--color-foreground)]/90 leading-relaxed">
+        <p className="text-[var(--color-foreground)] leading-[1.6]">
           {data.summary}
         </p>
-        <div className="mt-3">
-          <span className="text-xs font-medium px-3 py-1 rounded-full bg-[var(--color-primary)]/15 text-[var(--color-primary-light)] capitalize">
+        <div className="mt-4">
+          <span className="text-xs font-medium px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-muted)] capitalize">
             {data.document_type.replace("_", " ")}
           </span>
         </div>
@@ -234,30 +232,30 @@ export default function ResultsCards({ data }: { data: AnalysisResponse }) {
 
       {/* Medicines */}
       {data.medicines.length > 0 && (
-        <motion.div variants={item} className="glass-card p-6">
+        <motion.div variants={item} className="card p-6">
           <SectionHeader icon="💊" title={`Medicines (${data.medicines.length})`} />
           <div className="grid gap-3 md:grid-cols-2">
             {data.medicines.map((m, i) => (
               <div
                 key={i}
-                className="p-4 rounded-xl border border-[var(--color-card-border)] bg-[rgba(10,10,20,0.4)] hover:border-[var(--color-primary)]/30 transition-all"
+                className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)]"
               >
-                <p className="font-bold text-[var(--color-primary-light)]">{m.name}</p>
-                <p className="text-sm text-[var(--color-foreground)]/80 mt-1">{m.purpose}</p>
+                <p className="font-semibold text-[var(--color-foreground)]">{m.name}</p>
+                <p className="text-sm text-[var(--color-muted)] mt-1">{m.purpose}</p>
                 <div className="flex flex-wrap gap-2 mt-3">
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(108,92,231,0.12)] text-[var(--color-primary-light)]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-foreground)] capitalize">
                     {m.dosage}
                   </span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(0,206,201,0.12)] text-[var(--color-accent)]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-foreground)] capitalize">
                     {m.timing}
                   </span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(254,202,87,0.12)] text-[var(--color-warning)]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted)] capitalize">
                     {m.with_food} food
                   </span>
                 </div>
                 {m.notes && (
-                  <p className="text-xs text-[var(--color-muted)] mt-2 italic">
-                    💡 {m.notes}
+                  <p className="text-sm text-[var(--color-foreground)] mt-3">
+                    {m.notes}
                   </p>
                 )}
               </div>
@@ -273,27 +271,27 @@ export default function ResultsCards({ data }: { data: AnalysisResponse }) {
 
       {/* Lab Values */}
       {data.lab_values.length > 0 && (
-        <motion.div variants={item} className="glass-card p-6">
-          <SectionHeader icon="🔬" title={`Lab Values (${data.lab_values.length})`} color="var(--color-accent)" />
+        <motion.div variants={item} className="card p-6">
+          <SectionHeader icon="🔬" title={`Lab Values (${data.lab_values.length})`} />
           <div className="space-y-3">
             {data.lab_values.map((l, i) => (
               <div
                 key={i}
-                className="p-4 rounded-xl border border-[var(--color-card-border)] bg-[rgba(10,10,20,0.4)]"
+                className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)]"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <p className="font-semibold text-sm">{l.name}</p>
-                    <p className="text-xs text-[var(--color-muted)]">
+                    <p className="font-semibold text-sm text-[var(--color-foreground)]">{l.name}</p>
+                    <p className="text-xs text-[var(--color-muted)] mt-0.5">
                       Normal range: {l.normal_range}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-lg">{l.value}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono font-medium text-base text-[var(--color-foreground)]">{l.value}</span>
                     <StatusBadge status={l.status} />
                   </div>
                 </div>
-                <p className="text-sm text-[var(--color-foreground)]/75 mt-2">
+                <p className="text-sm text-[var(--color-foreground)] mt-3 leading-[1.6]">
                   {l.meaning}
                 </p>
               </div>
@@ -304,16 +302,15 @@ export default function ResultsCards({ data }: { data: AnalysisResponse }) {
 
       {/* Red Flags */}
       {data.red_flags.length > 0 && (
-        <motion.div variants={item} className="glass-card glow-danger p-6 border-[var(--color-danger)]/20">
-          <SectionHeader icon="🚨" title="Red Flags — Please Consult Your Doctor" color="var(--color-danger)" />
+        <motion.div variants={item} className="card p-6">
+          <SectionHeader icon="🚨" title="Red Flags" />
           <div className="space-y-2">
             {data.red_flags.map((flag, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 p-3 rounded-xl bg-[rgba(255,107,107,0.06)] border border-[rgba(255,107,107,0.12)]"
+                className="flex items-start gap-3 p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]"
               >
-                <span className="text-[var(--color-danger)] mt-0.5 shrink-0">⚠️</span>
-                <p className="text-sm">{flag}</p>
+                <p className="text-sm leading-[1.6] text-[var(--color-foreground)]">{flag}</p>
               </div>
             ))}
           </div>
@@ -322,18 +319,18 @@ export default function ResultsCards({ data }: { data: AnalysisResponse }) {
 
       {/* Doctor Questions */}
       {data.doctor_questions.length > 0 && (
-        <motion.div variants={item} className="glass-card p-6">
-          <SectionHeader icon="❓" title="Questions to Ask Your Doctor" color="var(--color-accent-light)" />
+        <motion.div variants={item} className="card p-6">
+          <SectionHeader icon="❓" title="Questions to Ask Your Doctor" />
           <div className="space-y-2">
             {data.doctor_questions.map((q, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 p-3 rounded-xl bg-[rgba(0,206,201,0.06)] border border-[rgba(0,206,201,0.1)]"
+                className="flex items-start gap-3 p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)]"
               >
-                <span className="text-[var(--color-accent)] font-bold text-sm shrink-0">
+                <span className="font-semibold text-sm shrink-0 text-[var(--color-foreground)]">
                   {i + 1}.
                 </span>
-                <p className="text-sm">{q}</p>
+                <p className="text-sm leading-[1.6] text-[var(--color-foreground)]">{q}</p>
               </div>
             ))}
           </div>
@@ -343,11 +340,13 @@ export default function ResultsCards({ data }: { data: AnalysisResponse }) {
       {/* Disclaimer */}
       <motion.div
         variants={item}
-        className="glass-card p-5 border-[var(--color-warning)]/15"
+        className="card p-5"
       >
         <div className="flex items-start gap-3">
-          <span className="text-lg shrink-0">⚕️</span>
-          <p className="text-sm text-[var(--color-muted)] italic leading-relaxed">
+          <svg className="w-5 h-5 shrink-0 text-[var(--color-muted)] mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-sm text-[var(--color-muted)] leading-[1.6]">
             {data.disclaimer}
           </p>
         </div>

@@ -41,6 +41,63 @@ export default function FileUpload({
     setIsDragging(false);
   }, []);
 
+  const processFile = useCallback(async (selected: File) => {
+    if (selected.size > 10 * 1024 * 1024) {
+        alert("File too large. Maximum size is 10MB.");
+        return;
+    }
+    
+    // If it's an image and larger than 1MB, compress it
+    if (selected.type.startsWith("image/") && selected.size > 1024 * 1024) {
+      try {
+        const img = new Image();
+        img.src = URL.createObjectURL(selected);
+        await new Promise((resolve) => { img.onload = resolve; });
+        
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        // Max dimension 1200
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], selected.name, {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            });
+            onFileSelect(compressedFile);
+          } else {
+            onFileSelect(selected);
+          }
+        }, "image/jpeg", 0.8);
+      } catch {
+        onFileSelect(selected);
+      }
+    } else {
+      onFileSelect(selected);
+    }
+  }, [onFileSelect]);
+
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
@@ -48,18 +105,20 @@ export default function FileUpload({
       setIsDragging(false);
       const droppedFile = e.dataTransfer.files[0];
       if (droppedFile && ACCEPTED.includes(droppedFile.type)) {
-        onFileSelect(droppedFile);
+        processFile(droppedFile);
       }
     },
-    [onFileSelect]
+    [processFile]
   );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const selected = e.target.files?.[0];
-      if (selected) onFileSelect(selected);
+      if (selected && ACCEPTED.includes(selected.type)) {
+          processFile(selected);
+      }
     },
-    [onFileSelect]
+    [processFile]
   );
 
   const formatSize = (bytes: number) => {
@@ -95,9 +154,9 @@ export default function FileUpload({
               id="file-upload-input"
             />
             <div className="flex flex-col items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-[var(--color-surface-alt)] border border-[var(--color-border)] flex items-center justify-center">
                 <svg
-                  className="w-8 h-8 text-[var(--color-primary-light)]"
+                  className="w-8 h-8 text-[var(--color-foreground)]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -126,12 +185,12 @@ export default function FileUpload({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="glass-card p-5 flex items-center justify-between"
+            className="card p-5 flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] flex items-center justify-center">
                 <svg
-                  className="w-5 h-5 text-[var(--color-primary-light)]"
+                  className="w-5 h-5 text-[var(--color-foreground)]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -155,7 +214,7 @@ export default function FileUpload({
             </div>
             <button
               onClick={onClear}
-              className="text-[var(--color-muted)] hover:text-[var(--color-danger)] transition-colors p-2"
+              className="text-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors p-2"
               aria-label="Remove file"
               id="clear-file-btn"
             >

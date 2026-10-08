@@ -67,9 +67,29 @@ Report Decoder uses Google's Gemini multimodal AI to read and explain medical do
 
 - Python 3.9+
 - Node.js 18+
+- Docker & Docker Compose (Optional, for containerized setup)
 - A [Google Gemini API key](https://aistudio.google.com/apikey)
 
-### Backend
+### Option 1: Docker (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/Abhi120320/ReportDecoder.git
+cd ReportDecoder
+
+# Configure environment
+cp backend/.env.example backend/.env
+# Edit backend/.env and add your GEMINI_API_KEY
+
+# Build and start the containers
+docker-compose up --build -d
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Option 2: Manual Setup
+
+#### Backend
 
 ```bash
 cd backend

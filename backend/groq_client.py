@@ -5,7 +5,9 @@ import os
 from groq import Groq
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+_raw_model = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+DECOMMISSIONED_MODELS = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview"]
+GROQ_MODEL = "qwen/qwen3.8-27b" if _raw_model in DECOMMISSIONED_MODELS else _raw_model
 
 _client = None
 

@@ -1,6 +1,7 @@
 """Gemini API client helper for the Report Decoder."""
 
 import os
+
 import google.generativeai as genai
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")

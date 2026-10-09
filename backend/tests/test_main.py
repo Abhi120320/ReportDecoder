@@ -63,14 +63,10 @@ PRESCRIPTION_JSON = json.dumps({
 MALFORMED_JSON = "{ this is not valid json !!!"
 
 
-def _make_mock_groq_response(content: str) -> MagicMock:
-    """Build a mock that mimics ``groq.chat.completions.create()`` return."""
-    mock_message = MagicMock()
-    mock_message.content = content
-    mock_choice = MagicMock()
-    mock_choice.message = mock_message
+def _make_mock_gemini_response(content: str) -> MagicMock:
+    """Build a mock that mimics ``model.generate_content()`` return."""
     mock_response = MagicMock()
-    mock_response.choices = [mock_choice]
+    mock_response.text = content
     return mock_response
 
 

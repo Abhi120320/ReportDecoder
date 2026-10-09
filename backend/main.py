@@ -4,7 +4,6 @@ FastAPI service that accepts medical reports and returns
 patient-friendly explanations via the Gemini API.
 """
 
-import base64
 import json
 
 import fitz  # PyMuPDF
@@ -138,6 +137,7 @@ Return a valid JSON object matching this schema exactly:
 
     # --- call Gemini ---
     import asyncio
+
     import google.generativeai as genai
 
     max_retries = 2

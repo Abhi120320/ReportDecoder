@@ -6,8 +6,10 @@ interface ChatMessage {
   content: string;
 }
 
+import { AnalysisResponse } from "@/lib/types";
+
 interface ChatWidgetProps {
-  context: any; // The JSON analysis result
+  context: AnalysisResponse | null; // The JSON analysis result
 }
 
 export default function ChatWidget({ context }: ChatWidgetProps) {
@@ -46,7 +48,7 @@ export default function ChatWidget({ context }: ChatWidgetProps) {
 
       const data = await response.json();
       setMessages((prev) => [...prev, { role: "model", content: data.reply }]);
-    } catch (err) {
+    } catch {
       setMessages((prev) => [...prev, { role: "model", content: "Sorry, I am having trouble connecting to the server. Please try again." }]);
     } finally {
       setLoading(false);

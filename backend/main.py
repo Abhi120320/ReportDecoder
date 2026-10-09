@@ -5,7 +5,6 @@ patient-friendly explanations via the Gemini API.
 """
 
 import asyncio
-import base64
 import json
 
 import fitz  # PyMuPDF
@@ -180,7 +179,7 @@ Do not diagnose or prescribe. Always remind them to consult a doctor for actual 
     history = []
     for msg in body.messages[:-1]:
         history.append({"role": msg.role, "parts": [{"text": msg.content}]})
-    
+
     current_message = body.messages[-1].content
 
     max_retries = 2
@@ -188,7 +187,7 @@ Do not diagnose or prescribe. Always remind them to consult a doctor for actual 
         try:
             model = get_model()
             chat_session = model.start_chat(history=history)
-            # Prefix the very first message with the system prompt if needed, 
+            # Prefix the very first message with the system prompt if needed,
             # but usually it's better to just pass it in system_instruction.
             # google-genai 0.8+ supports system_instruction:
             model = genai.GenerativeModel(

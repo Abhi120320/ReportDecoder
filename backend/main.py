@@ -4,9 +4,12 @@ FastAPI service that accepts medical reports and returns
 patient-friendly explanations via the Gemini API.
 """
 
+import asyncio
+import base64
 import json
 
 import fitz  # PyMuPDF
+import google.generativeai as genai
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,7 +19,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from gemini_client import get_model
-from models import AnalysisResponse
+from models import AnalysisResponse, ChatRequest, ChatResponse
 
 load_dotenv()
 
@@ -135,11 +138,6 @@ Return a valid JSON object matching this schema exactly:
             "data": file_bytes
         })
 
-    # --- call Gemini ---
-    import asyncio
-
-    import google.generativeai as genai
-
     max_retries = 2
     for attempt in range(max_retries):
         try:
@@ -164,6 +162,50 @@ Return a valid JSON object matching this schema exactly:
         raise HTTPException(status_code=502, detail=f"Failed to parse Gemini response: {e}")
 
     return AnalysisResponse(**result)
+
+
+@app.post("/chat", response_model=ChatResponse)
+@limiter.limit("10/minute")
+async def chat(request: Request, body: ChatRequest):
+    system_prompt = f"""You are a helpful and patient medical assistant helping a user understand their medical report.
+You have the context of their analyzed medical report below.
+Answer their questions clearly, kindly, and in simple language.
+Do not diagnose or prescribe. Always remind them to consult a doctor for actual medical advice.
+
+--- ANALYZED REPORT CONTEXT ---
+{body.context}
+-------------------------------"""
+
+    # Gemini API uses 'user' and 'model' as roles.
+    history = []
+    for msg in body.messages[:-1]:
+        history.append({"role": msg.role, "parts": [{"text": msg.content}]})
+    
+    current_message = body.messages[-1].content
+
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            model = get_model()
+            chat_session = model.start_chat(history=history)
+            # Prefix the very first message with the system prompt if needed, 
+            # but usually it's better to just pass it in system_instruction.
+            # google-genai 0.8+ supports system_instruction:
+            model = genai.GenerativeModel(
+                model_name=get_model().model_name,
+                system_instruction=system_prompt,
+            )
+            chat_session = model.start_chat(history=history)
+
+            response = chat_session.send_message(
+                current_message,
+                generation_config=genai.types.GenerationConfig(temperature=0.3)
+            )
+            return ChatResponse(reply=response.text)
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise HTTPException(status_code=502, detail=f"Gemini API error after retries: {e}. Please try again later.")
+            await asyncio.sleep(1)
 
 
 if __name__ == "__main__":

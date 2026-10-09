@@ -9,6 +9,7 @@ import { SUPPORTED_LANGUAGES } from "@/lib/types";
 
 const LoadingScanner = dynamic(() => import("@/components/LoadingScanner"), { ssr: false });
 const ResultsCards = dynamic(() => import("@/components/ResultsCards"), { ssr: false });
+const ChatWidget = dynamic(() => import("@/components/ChatWidget"), { ssr: false });
 import type { AnalysisResponse, SupportedLanguage } from "@/lib/types";
 
 const API_URL = "/api";
@@ -189,6 +190,7 @@ export default function AnalyzePage() {
                 </div>
               </div>
               <ResultsCards data={result} />
+              <ChatWidget context={result} />
             </motion.div>
           )}
         </AnimatePresence>

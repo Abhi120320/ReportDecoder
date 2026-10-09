@@ -30,3 +30,14 @@ class AnalysisResponse(BaseModel):
     red_flags: list[str] = Field(default_factory=list)
     doctor_questions: list[str] = Field(default_factory=list)
     disclaimer: str = Field(default="")
+
+class ChatMessage(BaseModel):
+    role: Literal["user", "model"]
+    content: str
+
+class ChatRequest(BaseModel):
+    context: str
+    messages: list[ChatMessage]
+
+class ChatResponse(BaseModel):
+    reply: str

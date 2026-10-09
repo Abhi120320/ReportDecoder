@@ -16,7 +16,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from groq_client import GROQ_MODEL, get_client
+from gemini_client import get_model
 from models import AnalysisResponse
 
 load_dotenv()
@@ -111,7 +111,7 @@ Return a valid JSON object matching this schema exactly:
 {json.dumps(AnalysisResponse.model_json_schema(), indent=2)}"""
 
     # --- Process file into images ---
-    base64_images = []
+    content_parts = [prompt]
 
     if file.content_type == "application/pdf":
         try:
@@ -122,47 +122,46 @@ Return a valid JSON object matching this schema exactly:
                 page = doc.load_page(page_num)
                 pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # 2x zoom for better OCR
                 img_data = pix.tobytes("png")
-                b64 = base64.b64encode(img_data).decode("utf-8")
-                base64_images.append(f"data:image/png;base64,{b64}")
+                content_parts.append({
+                    "mime_type": "image/png",
+                    "data": img_data
+                })
             doc.close()
         except Exception as e:  # noqa: BLE001
             raise HTTPException(status_code=400, detail=f"Failed to process PDF: {e}")
     else:
         # It's an image
-        b64 = base64.b64encode(file_bytes).decode("utf-8")
-        base64_images.append(f"data:{file.content_type};base64,{b64}")
-
-    # --- call Groq ---
-    content_parts = [{"type": "text", "text": prompt}]
-    for b64_img in base64_images:
         content_parts.append({
-            "type": "image_url",
-            "image_url": {"url": b64_img}
+            "mime_type": file.content_type,
+            "data": file_bytes
         })
 
+    # --- call Gemini ---
     import asyncio
+    import google.generativeai as genai
 
     max_retries = 2
     for attempt in range(max_retries):
         try:
-            response = get_client().chat.completions.create(
-                model=GROQ_MODEL,
-                messages=[{"role": "user", "content": content_parts}],
-                temperature=0.0,
-                response_format={"type": "json_object"},
-                timeout=30.0,
+            model = get_model()
+            response = model.generate_content(
+                content_parts,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.0,
+                    response_mime_type="application/json",
+                )
             )
-            response_text = response.choices[0].message.content
+            response_text = response.text
             break
         except Exception as e:  # noqa: BLE001
             if attempt == max_retries - 1:
-                raise HTTPException(status_code=502, detail=f"Groq API error after retries: {e}. Please try again later.")
+                raise HTTPException(status_code=502, detail=f"Gemini API error after retries: {e}. Please try again later.")
             await asyncio.sleep(1)
 
     try:
         result = json.loads(response_text)
     except (json.JSONDecodeError, ValueError) as e:
-        raise HTTPException(status_code=502, detail=f"Failed to parse Groq response: {e}")
+        raise HTTPException(status_code=502, detail=f"Failed to parse Gemini response: {e}")
 
     return AnalysisResponse(**result)
 

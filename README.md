@@ -15,7 +15,7 @@ Built by **Team_Altron**, Report Decoder leverages vision-language models to tra
 ## 🛠 Tech Stack
 - **Frontend**: Next.js (React), Tailwind CSS, Framer Motion.
 - **Backend**: FastAPI (Python), SlowAPI for rate limiting.
-- **AI Model**: Groq API (`qwen/qwen3.8-27b`).
+- **AI Model**: Gemini API (`gemini-2.5-flash`).
 
 ## 🌐 Live Demo & Deployment
 To easily test and get outputs without setting up the project locally, you can access the live deployed version:
@@ -27,7 +27,7 @@ To easily test and get outputs without setting up the project locally, you can a
 If you wish to deploy this yourself:
 1. **Vercel**: Import the GitHub repository into Vercel. Vercel will automatically detect the `vercel.json` file and set up both the frontend and backend as internal services.
 2. In the Vercel project settings under **Environment Variables**, add:
-   - `GROQ_API_KEY`: Your Groq API Key.
+   - `GEMINI_API_KEY`: Your Gemini API Key.
    - `NEXT_PUBLIC_API_URL`: Leave blank or set as needed (handled internally by Vercel Services bindings).
 
 ## ⚙️ Setup & Installation
@@ -40,7 +40,7 @@ If you wish to deploy this yourself:
 ### 1. Environment Variables
 In the `backend` directory, create a `.env` file based on `.env.example`:
 ```
-GROQ_API_KEY=your_groq_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 ### 2. Running with Docker (Recommended)
@@ -72,7 +72,7 @@ cd backend
 pytest tests/ -v
 pytest tests/ --cov=. --cov-report=term-missing
 ```
-*Tests file validation, response structures, Groq mocking, and rate limits.*
+*Tests file validation, response structures, Gemini mocking, and rate limits.*
 
 **Frontend (Vitest + React Testing Library):**
 ```bash

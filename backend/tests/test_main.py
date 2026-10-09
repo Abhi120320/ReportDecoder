@@ -1,7 +1,7 @@
 """
 Comprehensive tests for the Report Decoder backend API.
 
-All Groq API calls are mocked — no external network access is required.
+All Gemini API calls are mocked — no external network access is required.
 """
 
 import json
@@ -145,13 +145,13 @@ class TestFileValidation:
 class TestAnalyzeSuccess:
     """Tests for a successful POST /analyze round-trip (Groq mocked)."""
 
-    @patch("main.get_client")
-    def test_image_upload_returns_valid_response(self, mock_gc: MagicMock) -> None:
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = (
-            _make_mock_groq_response(VALID_ANALYSIS_JSON)
+    @patch("main.get_model")
+    def test_image_upload_returns_valid_response(self, mock_get_model: MagicMock) -> None:
+        mock_model = MagicMock()
+        mock_model.generate_content.return_value = (
+            _make_mock_gemini_response(VALID_ANALYSIS_JSON)
         )
-        mock_gc.return_value = mock_client
+        mock_get_model.return_value = mock_model
 
         resp = client.post(
             "/analyze",
@@ -164,13 +164,13 @@ class TestAnalyzeSuccess:
         assert len(body["lab_values"]) == 1
         assert body["lab_values"][0]["status"] == "normal"
 
-    @patch("main.get_client")
-    def test_pdf_upload_returns_valid_response(self, mock_gc: MagicMock) -> None:
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = (
-            _make_mock_groq_response(VALID_ANALYSIS_JSON)
+    @patch("main.get_model")
+    def test_pdf_upload_returns_valid_response(self, mock_get_model: MagicMock) -> None:
+        mock_model = MagicMock()
+        mock_model.generate_content.return_value = (
+            _make_mock_gemini_response(VALID_ANALYSIS_JSON)
         )
-        mock_gc.return_value = mock_client
+        mock_get_model.return_value = mock_model
 
         resp = client.post(
             "/analyze",
@@ -181,13 +181,13 @@ class TestAnalyzeSuccess:
         body = resp.json()
         assert body["summary"] == "Normal blood work results"
 
-    @patch("main.get_client")
-    def test_prescription_analysis(self, mock_gc: MagicMock) -> None:
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = (
-            _make_mock_groq_response(PRESCRIPTION_JSON)
+    @patch("main.get_model")
+    def test_prescription_analysis(self, mock_get_model: MagicMock) -> None:
+        mock_model = MagicMock()
+        mock_model.generate_content.return_value = (
+            _make_mock_gemini_response(PRESCRIPTION_JSON)
         )
-        mock_gc.return_value = mock_client
+        mock_get_model.return_value = mock_model
 
         resp = client.post(
             "/analyze",
@@ -208,37 +208,37 @@ class TestAnalyzeSuccess:
 class TestLanguageSelection:
     """Verify that the chosen language is forwarded to the prompt."""
 
-    @patch("main.get_client")
-    def test_language_forwarded_to_prompt(self, mock_gc: MagicMock) -> None:
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = (
-            _make_mock_groq_response(VALID_ANALYSIS_JSON)
+    @patch("main.get_model")
+    def test_language_forwarded_to_prompt(self, mock_get_model: MagicMock) -> None:
+        mock_model = MagicMock()
+        mock_model.generate_content.return_value = (
+            _make_mock_gemini_response(VALID_ANALYSIS_JSON)
         )
-        mock_gc.return_value = mock_client
+        mock_get_model.return_value = mock_model
 
         client.post(
             "/analyze",
             files={"file": ("r.png", _tiny_png(), "image/png")},
             data={"language": "Tamil"},
         )
-        call_args = mock_client.chat.completions.create.call_args
-        prompt_text = call_args.kwargs["messages"][0]["content"][0]["text"]
+        call_args = mock_model.generate_content.call_args
+        prompt_text = call_args.args[0][0]
         assert "Tamil" in prompt_text
 
-    @patch("main.get_client")
-    def test_default_language_is_english(self, mock_gc: MagicMock) -> None:
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = (
-            _make_mock_groq_response(VALID_ANALYSIS_JSON)
+    @patch("main.get_model")
+    def test_default_language_is_english(self, mock_get_model: MagicMock) -> None:
+        mock_model = MagicMock()
+        mock_model.generate_content.return_value = (
+            _make_mock_gemini_response(VALID_ANALYSIS_JSON)
         )
-        mock_gc.return_value = mock_client
+        mock_get_model.return_value = mock_model
 
         client.post(
             "/analyze",
             files={"file": ("r.png", _tiny_png(), "image/png")},
         )
-        call_args = mock_client.chat.completions.create.call_args
-        prompt_text = call_args.kwargs["messages"][0]["content"][0]["text"]
+        call_args = mock_model.generate_content.call_args
+        prompt_text = call_args.args[0][0]
         assert "English" in prompt_text
 
 
@@ -249,11 +249,11 @@ class TestLanguageSelection:
 class TestErrorHandling:
     """Tests for Groq failures and malformed responses."""
 
-    @patch("main.get_client")
-    def test_groq_timeout_returns_502(self, mock_gc: MagicMock) -> None:
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = TimeoutError("timed out")
-        mock_gc.return_value = mock_client
+    @patch("main.get_model")
+    def test_groq_timeout_returns_502(self, mock_get_model: MagicMock) -> None:
+        mock_model = MagicMock()
+        mock_model.generate_content.side_effect = TimeoutError("timed out")
+        mock_get_model.return_value = mock_model
 
         resp = client.post(
             "/analyze",
@@ -261,13 +261,13 @@ class TestErrorHandling:
             data={"language": "English"},
         )
         assert resp.status_code == 502
-        assert "Groq API error" in resp.json()["detail"]
+        assert "Gemini API error" in resp.json()["detail"]
 
-    @patch("main.get_client")
-    def test_groq_generic_error_returns_502(self, mock_gc: MagicMock) -> None:
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = RuntimeError("API down")
-        mock_gc.return_value = mock_client
+    @patch("main.get_model")
+    def test_groq_generic_error_returns_502(self, mock_get_model: MagicMock) -> None:
+        mock_model = MagicMock()
+        mock_model.generate_content.side_effect = RuntimeError("API down")
+        mock_get_model.return_value = mock_model
 
         resp = client.post(
             "/analyze",
@@ -276,13 +276,13 @@ class TestErrorHandling:
         )
         assert resp.status_code == 502
 
-    @patch("main.get_client")
-    def test_malformed_ai_response_returns_502(self, mock_gc: MagicMock) -> None:
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = (
-            _make_mock_groq_response(MALFORMED_JSON)
+    @patch("main.get_model")
+    def test_malformed_ai_response_returns_502(self, mock_get_model: MagicMock) -> None:
+        mock_model = MagicMock()
+        mock_model.generate_content.return_value = (
+            _make_mock_gemini_response(MALFORMED_JSON)
         )
-        mock_gc.return_value = mock_client
+        mock_get_model.return_value = mock_model
 
         resp = client.post(
             "/analyze",

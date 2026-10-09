@@ -69,16 +69,18 @@ The repository contains comprehensive tests for both frontend and backend.
 **Backend (pytest):**
 ```bash
 cd backend
-pytest
+pytest tests/ -v
+pytest tests/ --cov=. --cov-report=term-missing
 ```
 *Tests file validation, response structures, Groq mocking, and rate limits.*
 
 **Frontend (Vitest + React Testing Library):**
 ```bash
 cd frontend
-npm test
+npm run test
+npm run test -- --coverage
 ```
-*Tests component rendering, language selection, and lab-value status formatting.*
+*Tests component rendering, file processing, language selection, and lab-value status formatting.*
 
 ## 🔒 Security
 - **Data Protection**: Temp files are not saved to disk. Uploads are strictly processed in-memory (`BytesIO`/`File.read()`).
